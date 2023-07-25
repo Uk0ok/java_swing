@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -20,6 +21,7 @@ import javax.swing.table.DefaultTableModel;
 import vo.filesVO;
 
 public class swingUtil extends JFrame implements ActionListener {
+	private List<filesVO> fList;
 	private Vector<String> vector;
 	private DefaultTableModel model;
 	private JTable table;
@@ -28,7 +30,7 @@ public class swingUtil extends JFrame implements ActionListener {
     
     public void viewSwing(String path) {
     	fileUtil fs = new fileUtil();
-    	List<filesVO> fList = fs.fileSearch(path);
+    	fList = fs.fileSearch(path);
     	
     	vector = new Vector<String>();
         vector.addElement("파일명");
@@ -79,10 +81,30 @@ public class swingUtil extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		DefaultTableModel filteredModel = new DefaultTableModel(vector, 0);
+		
 		if (e.getSource() == search) {
-	        String searchText = searchField.getText().trim().toLowerCase();
-//	        searchFiles(searchText);
-	        JOptionPane.showMessageDialog(this, "입력한 검색어 : " + searchText, "검색어 확인", JOptionPane.INFORMATION_MESSAGE);
-	    }
+			String searchText = searchField.getText().trim().toLowerCase();
+			JOptionPane.showMessageDialog(this, "입력한 검색어 : " + searchText, "검색어 확인", JOptionPane.INFORMATION_MESSAGE);
+			
+			for (filesVO data : fList) {
+				if (data.getFileName().toLowerCase().contains(searchText)) {
+					Vector<Object> v = new Vector<Object>();
+					v.add(data.getFileName());
+					v.add(data.getFilePath());
+					v.add(data.getFileSize());
+					v.add(data.getFileDate());
+					filteredModel.addRow(v);
+				}
+			}
+			
+			if (filteredModel.getRowCount() == 0) {
+	            // 검색 결과가 없을 때 알림창 띄우기
+	            JOptionPane.showMessageDialog(this, "검색 결과가 없습니다.", "검색 결과", JOptionPane.INFORMATION_MESSAGE);
+	            table.setModel(filteredModel);
+	        } else {
+	            table.setModel(filteredModel);
+	        }
+		}
 	}
 }
